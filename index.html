@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ParseLab – Grammar Transformation &amp; Predictive Parsing</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<button id="menuBtn" class="btn ghost" aria-label="Toggle navigation">☰ Menu</button>
+<nav id="sidebar" aria-label="Main navigation">
+  <div class="brand">ParseLab<small>Transform. Analyze. Parse.</small></div>
+  <button data-go="dashboard">Dashboard</button>
+  <button data-go="editor">Grammar Editor</button>
+  <button data-go="transform">Transformations</button>
+  <button data-go="ff">FIRST &amp; FOLLOW</button>
+  <button data-go="table">Parsing Table</button>
+  <button data-go="parser">Predictive Parser</button>
+  <button data-go="help">Help &amp; Examples</button>
+</nav>
+<main>
+  <header><h1 id="title"></h1><p id="sub" class="muted"></p></header>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <section id="dashboard"></section>
+
+  <section id="editor" hidden>
+    <div class="card">
+      <label for="grammarText">Grammar (one production per line)</label>
+      <textarea id="grammarText" rows="10" spellcheck="false"></textarea>
+      <p class="muted">Use <code>-&gt;</code> or <code>→</code>, <code>|</code> for alternatives, <code>ε</code> or <code>epsilon</code> for empty. Names like <code>id</code>, <code>E'</code> are single symbols. Separate other symbols with spaces (<code>a b</code>, not <code>ab</code>). A nonterminal is any symbol on a left-hand side.</p>
+      <div class="row"><label for="startSel">Start symbol</label><select id="startSel"></select>
+      <button id="analyzeBtn" class="btn">Analyze Grammar</button><button id="clearBtn" class="btn ghost">Clear</button><button id="exampleBtn" class="btn ghost">Load Example</button></div>
+      <div id="errors" role="alert" class="errbox"></div>
+    </div>
+    <div class="card"><h3>Examples</h3><div id="examples" class="row"></div></div>
+  </section>
+
+  <section id="transform" hidden>
+    <div class="row">
+      <button id="tImm" class="btn">Eliminate Immediate Left Recursion</button>
+      <button id="tLeft" class="btn">Eliminate All Left Recursion</button>
+      <button id="tFac" class="btn">Apply Left Factoring</button>
+      <button id="tAll" class="btn">Apply All Transformations</button>
+      <button id="tUse" class="btn good">Use Transformed Grammar</button>
+      <button id="tRestore" class="btn ghost">Restore Original Grammar</button>
+    </div>
+    <div id="tfOut"></div>
+  </section>
+
+  <section id="ff" hidden><button id="computeBtn" class="btn">Compute FIRST &amp; FOLLOW</button><div id="ffOut"></div></section>
+  <section id="table" hidden><button id="buildBtn" class="btn">Build Table</button><div id="tableOut"></div></section>
+
+  <section id="parser" hidden>
+    <div class="card"><label for="parseInput">Input tokens (separated by spaces)</label>
+      <div class="row"><input id="parseInput" type="text" autocomplete="off" placeholder="id + id * id"><button id="parseBtn" class="btn">Parse</button></div></div>
+    <div id="parseOut"></div>
+  </section>
+
+  <section id="help" hidden>
+    <div class="card help">
+      <h3>Concepts</h3>
+      <p><b>CFG</b>: a set of rules <code>A -&gt; α</code> describing a language. <b>Nonterminals</b> (left-hand sides) get rewritten; <b>terminals</b> are the actual tokens. <b>ε</b> means "nothing".</p>
+      <p><b>FIRST(α)</b>: terminals that can begin a string derived from α (plus ε if α can vanish). <b>FOLLOW(A)</b>: terminals that can appear right after A in some derivation; <code>$</code> marks end of input.</p>
+      <p><b>Left recursion</b> (<code>A -&gt; A α</code>) makes a top-down parser expand A forever. It is removed by rewriting to <code>A -&gt; β A'</code>, <code>A' -&gt; α A' | ε</code>. <b>Left factoring</b> rewrites <code>S -&gt; a b | a c</code> into <code>S -&gt; a S'</code>, <code>S' -&gt; b | c</code> so one lookahead can decide.</p>
+      <p><b>LL(1) table</b>: for each <code>A -&gt; α</code>, put it in <code>M[A, a]</code> for every a in FIRST(α); if ε is in FIRST(α), also for every b in FOLLOW(A). Two productions in one cell is an <b>LL(1) conflict</b>. The grammar may still be valid; it just needs transformation.</p>
+      <p><b>Predictive parsing</b>: keep a stack starting with <code>$ Start</code>. Match terminals, expand nonterminals through the table, accept on <code>$</code> vs <code>$</code>.</p>
+    </div>
+    <div class="card"><h3>Try a sample</h3><div id="helpSamples" class="row"></div></div>
+  </section>
+</main>
+<script src="app.js"></script>
+<script>document.getElementById('helpSamples').innerHTML = document.getElementById('examples').innerHTML || '';
+document.addEventListener('DOMContentLoaded',()=>{});
+(function(){var h=document.getElementById('helpSamples');h.innerHTML=Object.keys(ParseLab.SAMPLES).map(function(k){return '<button class="btn ghost" data-sample="'+k+'">'+k+'</button>'}).join('');})();</script>
+</body>
+</html>
